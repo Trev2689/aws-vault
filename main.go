@@ -46,6 +46,7 @@ var uploadCmd = &cobra.Command{
 		// Check required input parameters
 		bucketName, _ := cmd.Flags().GetString("bucket")
 		filePath, _ := cmd.Flags().GetString("file")
+		subdirectory, _ := cmd.Flags().GetString("subdirectory")
 
 		if bucketName == "" || filePath == "" {
 			fmt.Println("Please provide all required input parameters: --bucket and --file")
@@ -72,7 +73,7 @@ var uploadCmd = &cobra.Command{
 		// Upload file to S3
 		_, err = client.PutObject(context.Background(), &s3.PutObjectInput{
 			Bucket: aws.String(bucketName),
-			Key:    aws.String(filePath),
+			Key:    aws.String(subdirectory + "/" + filePath),
 			Body:   bytes.NewReader(data),
 		})
 		if err != nil {
@@ -92,6 +93,7 @@ var downloadCmd = &cobra.Command{
 		// Check required input parameters
 		bucketName, _ := cmd.Flags().GetString("bucket")
 		filePath, _ := cmd.Flags().GetString("file")
+		subdirectory, _ := cmd.Flags().GetString("subdirectory")
 
 		if bucketName == "" || filePath == "" {
 			fmt.Println("Please provide all required input parameters: --bucket and --file")
@@ -111,7 +113,7 @@ var downloadCmd = &cobra.Command{
 		// Download file from S3
 		resp, err := client.GetObject(context.Background(), &s3.GetObjectInput{
 			Bucket: aws.String(bucketName),
-			Key:    aws.String(filePath),
+			Key:    aws.String(subdirectory + "/" + filePath),
 		})
 		if err != nil {
 			fmt.Println("Error downloading file from S3:", err)
@@ -305,9 +307,11 @@ func readSecretFromJSON(filePath string) (string, error) {
 func init() {
 	uploadCmd.Flags().StringP("bucket", "b", "", "S3 bucket name")
 	uploadCmd.Flags().StringP("file", "f", "", "Path to file to upload")
+	uploadCmd.Flags().StringP("subdirectory", "s", "", "Subdirectory in S3 bucket")
 
 	downloadCmd.Flags().StringP("bucket", "b", "", "S3 bucket name")
 	downloadCmd.Flags().StringP("file", "f", "", "Path to file to download")
+	downloadCmd.Flags().StringP("subdirectory", "s", "", "Subdirectory in S3 bucket")
 
 	updateSecretCmd.Flags().StringP("name", "n", "", "Name of the secret")
 	updateSecretCmd.Flags().StringP("region", "r", "", "AWS region")
